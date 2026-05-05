@@ -1,0 +1,38 @@
+\contentsline {section}{\numberline {1}Abstract}{5}{section.1}%
+\contentsline {section}{\numberline {2}Introduction}{5}{section.2}%
+\contentsline {section}{\numberline {3}Problem Statement}{6}{section.3}%
+\contentsline {section}{\numberline {4}Objectives}{6}{section.4}%
+\contentsline {section}{\numberline {5}Literature Review}{6}{section.5}%
+\contentsline {section}{\numberline {6}Dataset Description}{7}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Source}{7}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Dataset Characteristics}{8}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Feature Representation}{8}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Methodology}{8}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Data Collection}{8}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Data Preprocessing}{8}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Exploratory Data Analysis}{9}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Model Development}{10}{subsection.7.4}%
+\contentsline {subsubsection}{\numberline {7.4.1}Decision Tree Classifier}{10}{subsubsection.7.4.1}%
+\contentsline {subsubsection}{\numberline {7.4.2}Random Forest Classifier}{11}{subsubsection.7.4.2}%
+\contentsline {subsubsection}{\numberline {7.4.3}XGBoost Classifier}{11}{subsubsection.7.4.3}%
+\contentsline {subsection}{\numberline {7.5}Model Evaluation}{11}{subsection.7.5}%
+\contentsline {section}{\numberline {8}System Architecture}{12}{section.8}%
+\contentsline {section}{\numberline {9}Implementation}{13}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Tools and Technologies}{13}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Implementation Steps}{13}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Key Code Snippet}{13}{subsection.9.3}%
+\contentsline {section}{\numberline {10}Results}{14}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Model Accuracy Comparison}{14}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Confusion Matrices}{14}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Feature Importance}{17}{subsection.10.3}%
+\contentsline {section}{\numberline {11}Discussion}{18}{section.11}%
+\contentsline {subsection}{\numberline {11.1}What the Numbers Actually Mean}{18}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}What Works Well and What Does Not}{18}{subsection.11.2}%
+\contentsline {section}{\numberline {12}Applications}{18}{section.12}%
+\contentsline {section}{\numberline {13}Future Scope}{19}{section.13}%
+\contentsline {section}{\numberline {14}Conclusion}{19}{section.14}%
+\contentsline {section}{\numberline {15}Roles and Contributions}{20}{section.15}%
+\contentsline {section}{\numberline {16}References}{20}{section.16}%
+\contentsline {section}{\numberline {17}Appendix}{21}{section.17}%
+\contentsline {subsection}{\numberline {17.1}Sample Dataset Records}{21}{subsection.17.1}%
+\contentsline {subsection}{\numberline {17.2}Full Preprocessing Code}{21}{subsection.17.2}%

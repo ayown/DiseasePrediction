@@ -1,0 +1,7 @@
+# Dataset 1 (not used — synthetic, gives 100% accuracy)
+curl -L "https://raw.githubusercontent.com/anujdutt9/Disease-Prediction-from-Symptoms/master/dataset/training_data.csv" -o "/home/saswatbarai/Downloads/MLC Project /dataset.csv"
+
+# Dataset 2 — Final dataset used (severity-weighted, realistic accuracy 87-92%)
+# Source: Kaggle — itachi9604/disease-symptom-description-dataset (GitHub mirror)
+curl -L "https://raw.githubusercontent.com/amMistic/Diseases-Prediction-based-on-Symptoms/main/Dataset/dataset.csv" -o /tmp/disease_raw.csv
+curl -L "https://raw.githubusercontent.com/amMistic/Diseases-Prediction-based-on-Symptoms/main/Dataset/Symptom-severity.csv" -o /tmp/symptom_severity.csv
