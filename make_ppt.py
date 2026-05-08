@@ -1280,6 +1280,77 @@ def s_conclusion():
     transition(slide, 'fade', 900)
 
 
+# ── 13. THANK YOU ─────────────────────────────────────────────────────────────
+def s_thankyou():
+    slide = prs.slides.add_slide(BLANK)
+    slide_bg(slide)
+    anim = Animator(slide)
+
+    # Decorative background glows
+    oval(slide,  8.5, -1.4,  6.0,  6.0, fill=RGBColor(0x40, 0x15, 0x05))
+    oval(slide, -1.2,  4.2,  3.5,  3.5, fill=RGBColor(0x08, 0x26, 0x36))
+    oval(slide,  5.0,  5.0,  2.2,  2.2, fill=RGBColor(0x1A, 0x28, 0x08))
+
+    # Top accent bar
+    box(slide, 0, 0, SW, 0.055, fill=ORANGE, rounded=False)
+
+    # Central "Thank You" block
+    ty = txt(slide, 'Thank You', ML, 1.60, CW, 1.40,
+             size=90, bold=True, color=WHITE,
+             font='Segoe UI Black', align=PP_ALIGN.CENTER)
+    anim.add(ty, 0, 700, 'fade')
+
+    # Coloured underline
+    ul = box(slide, SW / 2 - 3.0, 3.15, 6.0, 0.07, fill=ORANGE, rounded=False)
+    anim.add(ul, 300, 400, 'fade')
+
+    # Subtitle
+    sub = txt(slide,
+              'Disease Prediction System  Using Machine Learning',
+              ML, 3.38, CW, 0.40,
+              size=16, color=MUTED, align=PP_ALIGN.CENTER,
+              font='Segoe UI')
+    anim.add(sub, 450, 500, 'fade')
+
+    # Best accuracy badge
+    ba = box(slide, SW / 2 - 1.50, 3.95, 3.0, 0.60,
+             fill=RGBColor(0x1E, 0x12, 0x04), stroke=ORANGE, sw=1.4, rounded=True)
+    txt(slide, '★  Best Accuracy: 93.50%  (Stacking Ensemble)',
+        SW / 2 - 1.50, 3.98, 3.0, 0.50,
+        size=11.5, bold=True, color=ORANGE, align=PP_ALIGN.CENTER)
+    anim.add(ba, 550, 450, 'fade')
+
+    # Team info row
+    info_items = [
+        ('Course',   'Machine Learning Concept-2  (CSE 3968)', TEAL),
+        ('Institute','ITER, SOA University, Bhubaneswar',       AMBER),
+        ('Year',     'May 2026',                                BLUE),
+    ]
+    iw = (CW - 0.60) / 3
+    for i, (label, value, c) in enumerate(info_items):
+        x = ML + i * (iw + 0.30)
+        ib = box(slide, x, 4.80, iw, 0.96,
+                 fill=PANEL2, stroke=BORDER, rounded=True)
+        txt(slide, label, x, 4.86, iw, 0.30,
+            size=9, color=c, bold=True, align=PP_ALIGN.CENTER,
+            font='Segoe UI Semibold')
+        txt(slide, value, x, 5.18, iw, 0.50,
+            size=10.5, color=SOFT, align=PP_ALIGN.CENTER)
+        anim.add(ib, 650 + i * 120, 430, 'fade')
+
+    # Question prompt strip
+    qs = box(slide, ML, 5.96, CW, 0.50,
+             fill=RGBColor(0x10, 0x18, 0x28), stroke=TEAL, sw=1.2, rounded=True)
+    txt(slide, 'We welcome your questions  —  open for discussion',
+        ML + 0.25, 6.00, CW - 0.50, 0.40,
+        size=13, bold=True, color=TEAL, align=PP_ALIGN.CENTER)
+    anim.add(qs, 900, 450, 'fade')
+
+    footer(slide)
+    anim.apply()
+    transition(slide, 'fade', 1000)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # BUILD DECK
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1287,6 +1358,7 @@ builders = [
     s_cover, s_agenda, s_problem, s_dataset,
     s_pipeline, s_models, s_results, s_stacking,
     s_features, s_discussion, s_future, s_conclusion,
+    s_thankyou,
 ]
 
 for fn in builders:

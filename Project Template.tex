@@ -171,11 +171,11 @@ Bhubaneswar, Odisha\\[0.5cm]
 \section{Abstract}
 % ================================================================
 
-Diagnosing a disease early can quite literally save a life, yet most people do not have immediate access to a doctor every time they feel unwell. This project tries to address that gap. We built a \textbf{Disease Prediction System} that takes a patient's age and self-reported symptoms --- encoded by how severe each symptom is --- and predicts the most likely disease from a pool of 41 possibilities.
+Getting a proper diagnosis at the right time can genuinely be the difference between a smooth recovery and something far more serious. The frustrating reality, especially in smaller towns and rural pockets of India, is that most people simply do not have dependable access to a doctor each time they fall ill. This project was put together with that problem squarely in mind. We developed a \textbf{Disease Prediction System} that accepts a patient's age and self-reported symptoms --- represented as severity scores --- and identifies the most probable disease from a pool of 41 conditions.
 
-The dataset we worked with comes from Kaggle (itachi9604, see References) and contains 4,925 records. Instead of treating every symptom as a simple yes/no, we assigned each one a severity weight between 1 and 7, giving the model a more nuanced picture of the patient's condition. Two key innovations were incorporated on top of this baseline: (1) an \textbf{age-aware feature} derived from epidemiological age ranges for each disease, encoding clinical prior knowledge directly into the input vector; and (2) a \textbf{Stacking Ensemble} meta-learner that combines a Decision Tree, a Random Forest (200 trees), and XGBoost as base learners, feeding their out-of-fold probability predictions alongside the original features into a Logistic Regression meta-learner (\texttt{passthrough=True}).
+Our dataset, sourced from Kaggle (itachi9604, see References), holds 4,925 patient records. Rather than encoding each symptom as a plain yes-or-no flag, we assigned severity weights ranging from 1 to 7 --- giving the model a far richer, more realistic view of how unwell the patient actually is. Two design choices distinguish our pipeline from similar work: (1) an \textbf{age-aware feature} drawn from epidemiological age distributions for each disease, embedding genuine clinical knowledge directly into the input; and (2) a \textbf{Stacking Ensemble} that uses a Decision Tree, Random Forest (200 estimators), and XGBoost as base learners, whose out-of-fold probability predictions are fed --- alongside the original features (\texttt{passthrough=True}) --- into a Logistic Regression meta-learner for the final decision.
 
-Four classifiers were trained and evaluated on 985 held-out test samples. The Stacking Ensemble achieved the best result at \textbf{93.50\%} accuracy (macro precision 0.94, macro recall 0.93), followed by Random Forest at \textbf{93.30\%}, XGBoost at \textbf{91.47\%}, and the Decision Tree at \textbf{85.58\%}.
+Four classifiers were trained and evaluated on 985 held-out test samples. The Stacking Ensemble topped the board at \textbf{93.50\%} accuracy (macro precision 0.94, macro recall 0.93), followed by Random Forest at \textbf{93.30\%}, XGBoost at \textbf{91.47\%}, and the Decision Tree at \textbf{85.58\%}.
 
 \textbf{Keywords:} Disease Prediction, Machine Learning, Stacking Ensemble, Random Forest, XGBoost, Decision Tree, Symptom Severity, Age-Aware Features, Multi-class Classification.
 
@@ -183,75 +183,75 @@ Four classifiers were trained and evaluated on 985 held-out test samples. The St
 \section{Introduction}
 % ================================================================
 
-Think about the last time you felt sick and tried to search your symptoms online. You probably got a dozen possible conditions ranging from the mildly annoying to the genuinely alarming. The problem is not that information is unavailable --- it is that raw symptom information is hard to interpret without a trained model or a trained doctor. Machine learning offers a middle ground.
+We have all done it at some point --- typed our symptoms into a search engine and come back with a list running from a mild stomach bug to something outright alarming. The core trouble is not that information is scarce; it is that raw symptom data is genuinely difficult to make sense of without either clinical training or a well-calibrated model doing the heavy lifting. Machine learning sits neatly in that middle ground, and that is what drew us toward this problem.
 
-Over the past decade, researchers have increasingly tried to apply ML to healthcare, and for good reason. Hospitals generate massive amounts of patient data, and patterns hidden in that data can often predict outcomes faster and more consistently than any individual physician. But most of this work stays in research labs. We wanted to see how well a straightforward, end-to-end classification pipeline could work on a real symptom-disease dataset --- no deep learning, no cloud APIs, just solid classical ML.
+Over the past ten years or so, researchers across the globe have been applying ML to clinical decision support, and the motivation is hard to argue with. Hospitals and clinics generate staggering volumes of patient data every single day, and patterns buried within that data can surface diagnoses more quickly and consistently than any individual physician operating under time pressure. The snag is that most of this work never leaves the pages of academic journals. We wanted to honestly test what a clean, end-to-end classification pipeline could do on a publicly available symptom-disease dataset --- no deep learning stacks, no cloud APIs, just robust classical machine learning applied thoughtfully.
 
-For this project, we chose four algorithms that represent a natural progression in complexity, culminating in a meta-learning ensemble:
+We selected four algorithms that step up in complexity in a natural way, finishing with a meta-learning ensemble:
 
 \begin{itemize}
-    \item \textbf{Decision Tree} --- easy to understand, easy to explain, and a good starting benchmark.
-    \item \textbf{Random Forest} --- takes the idea of a single tree and builds an entire forest of them (200 trees), averaging out the errors.
-    \item \textbf{XGBoost} --- goes one step further by building trees sequentially, each one learning from the mistakes of the last.
-    \item \textbf{Stacking Ensemble} --- combines the predictions of all three base learners via a Logistic Regression meta-learner trained on out-of-fold probability outputs, with \texttt{passthrough=True} so the meta-learner also sees the original feature set alongside the base model outputs.
+    \item \textbf{Decision Tree} --- easy to follow, straightforward to explain to a non-technical person, and a sensible baseline to measure everything else against.
+    \item \textbf{Random Forest} --- builds a whole forest of 200 individual trees, each trained on a slightly different slice of the data, and combines their outputs to dampen individual errors.
+    \item \textbf{XGBoost} --- goes a step further by building trees one after another, each focused on correcting whatever the current ensemble got wrong.
+    \item \textbf{Stacking Ensemble} --- blends all three base models through a Logistic Regression meta-learner trained on out-of-fold probability outputs, with \texttt{passthrough=True} so the meta-learner can directly inspect the raw feature values as well.
 \end{itemize}
 
-Two additional innovations were applied: (1) an \textbf{age-aware feature} sampled from epidemiologically grounded age ranges for each disease, and (2) a \textbf{50\% symptom dropout} step to simulate realistic incomplete patient reporting. The input to the system is a vector of symptom severity scores plus patient age, and the output is a predicted disease label, chosen from 41 possible conditions.
+Two additional elements were woven into the pipeline: (1) an \textbf{age-aware feature} sampled from clinically grounded age distributions for each disease, and (2) a \textbf{50\% symptom dropout} step that mimics the incomplete symptom reporting seen in real-world clinical encounters. The system takes a vector of severity scores and patient age as input, and returns one predicted disease label from 41 possible conditions.
 
 % ================================================================
 \section{Problem Statement}
 % ================================================================
 
-When a patient walks into a clinic and says ``I have fever, joint pain, and feel exhausted,'' that same combination of symptoms could point to malaria, dengue, typhoid, or several other diseases. Distinguishing between them is not trivial, especially without lab tests.
+Consider a patient who walks into a clinic saying they have had a fever for three days, their joints are aching, and they feel completely drained. That exact combination of symptoms could reasonably indicate malaria, dengue, typhoid, or any number of other conditions. Telling them apart without laboratory investigations is not straightforward, even for an experienced clinician.
 
-\textbf{The problem we are solving:} Given the severity of symptoms reported by a patient, can a machine learning model reliably predict which of 41 diseases they are most likely suffering from?
+\textbf{The central question we are addressing:} Given a patient's self-reported symptom severity scores, can a machine learning model reliably predict which of 41 diseases they are most likely dealing with?
 
 \begin{itemize}
-    \item \textbf{Input:} A 137-dimensional feature vector comprising 136 symptom severity scores (0 = absent, 1--7 = clinical severity weight) plus one \textbf{age} feature sampled from the epidemiological age range of each disease.
-    \item \textbf{Output:} One of 41 disease labels (e.g., Malaria, Tuberculosis, Diabetes, etc.).
+    \item \textbf{Input:} A 137-dimensional feature vector --- 136 symptom severity scores (0 = symptom absent, 1--7 = clinical severity weight) plus one \textbf{age} value sampled from the epidemiological age range of each disease.
+    \item \textbf{Output:} One of 41 disease labels (e.g., Malaria, Tuberculosis, Diabetes, and so on).
     \item \textbf{Task type:} Supervised multi-class classification.
 \end{itemize}
 
-The harder part of this problem is not the model itself --- it is the fact that many diseases share overlapping symptoms. Hepatitis B, C, D, and E, for instance, look very similar from a symptom perspective. Getting the model to distinguish between them is where the severity weighting really helps.
+What makes this genuinely difficult is not the modelling itself --- it is the heavy symptom overlap between many disease pairs. The four hepatitis variants (B, C, D, and E) are a good example: from a symptom perspective alone, they look nearly identical to one another. This is precisely where severity-weighted encoding earns its place, since a patient with ``fatigue'' at severity 2 and another with the same symptom at severity 7 are presenting very differently, and that difference matters diagnostically.
 
 % ================================================================
 \section{Objectives}
 % ================================================================
 
-Going into this project, we had a few clear goals in mind:
+Before writing a single line of code, we sat down and agreed on what we actually wanted to accomplish:
 
 \begin{enumerate}
-    \item Properly clean and prepare the raw symptom dataset so it is actually usable by a classifier.
-    \item Build three different models and train them fairly, using the same data split and preprocessing.
-    \item Evaluate each model rigorously --- not just accuracy, but also precision, recall, F1-score, and a proper confusion matrix.
-    \item Figure out which model is actually worth recommending for a real-world deployment scenario.
-    \item Understand \textit{which symptoms matter most} by analysing feature importances from the Random Forest.
+    \item Thoroughly clean and organise the raw symptom dataset into a form that machine learning classifiers can actually work with.
+    \item Train four different models on the exact same data split and preprocessing pipeline, so any performance differences are down to the algorithms and not the setup.
+    \item Evaluate each model properly --- going beyond plain accuracy to include precision, recall, F1-score, and confusion matrices that show exactly where predictions go wrong.
+    \item Identify which model would genuinely be worth recommending for deployment, weighing predictive performance against how explainable the results are.
+    \item Understand \textit{which symptoms contribute most} to the predictions by analysing feature importances extracted from the Random Forest.
 \end{enumerate}
 
 % ================================================================
 \section{Literature Review}
 % ================================================================
 
-Attempts to automate medical diagnosis predate modern machine learning --- expert systems in the 1980s tried to encode clinical rules explicitly, before researchers realised that learned models could generalise far better across the messy variability of real patients.
+The push to automate medical diagnosis actually predates modern machine learning by several decades. Rule-based expert systems in the 1980s tried to capture a physician's reasoning by encoding clinical logic as explicit if-then statements. The fundamental weakness of those systems was rigidity --- the moment a patient walked in with an unusual symptom combination not anticipated by the rulebook, performance fell apart. Data-driven machine learning addressed this head-on by learning directly from patient records rather than relying on hand-crafted rules.
 
-\textbf{Early symptom-based approaches} leaned heavily on hand-crafted rule bases, but those systems broke down whenever a patient presented an unusual combination of symptoms not covered by the rules. Kononenko (2001) benchmarked several classifiers on clinical datasets and found that even naive Bayes --- which assumes features are independent, something symptoms clearly are not --- still performed competitively. That result is instructive: if a model with such a strong wrong assumption can do well, a properly-tuned tree ensemble working with severity-weighted features should do considerably better. Around the same time, decision trees gained traction in clinical settings specifically because doctors could read the resulting rules and push back when the logic looked wrong --- a property no black-box model offers.
+\textbf{Early symptom-based ML efforts} continued to face challenges due to the inherently messy nature of clinical data. Kononenko (2001) evaluated several classifiers on medical datasets and reported that even Naive Bayes --- which assumes full statistical independence between features, a clearly incorrect assumption for symptoms --- managed competitive accuracy. That finding is actually quite telling: if a model built on a fundamentally wrong assumption can perform reasonably well, a well-tuned tree ensemble working with severity-weighted features should do considerably better. During the same period, decision trees became especially popular in clinical contexts because they produced human-readable rules. A clinician could look at the tree, spot a branch that seemed medically nonsensical, and raise it with the data scientist --- an oversight loop that no black-box method supports.
 
-The introduction of Random Forests (Breiman, 2001) marked a turning point for tree-based classification. Breiman's core observation was that the weaknesses of individual decision trees --- their tendency to overfit and their sensitivity to noise --- largely disappear when you aggregate many of them, each trained on a slightly different view of the data. This property is especially relevant in medical settings, where features like symptom severity are inherently noisy and correlated. Subsequent healthcare studies, including Rajpurkar et al.\ (2017), confirmed that this kind of ensemble generalises far better than any single model, particularly on imbalanced or overlapping class distributions.
+The arrival of Random Forests (Breiman, 2001) was a significant moment for structured classification problems. Breiman's central insight was deceptively simple: the weaknesses of individual decision trees --- overfitting, sensitivity to noise and outliers --- largely cancel out when you combine many trees, each trained on a different random subsample of the data with a different random subset of features at each split. In a medical setting, where symptom severity values are inherently noisy and many symptoms co-occur across unrelated diseases, this variance-reduction property is especially valuable. Later work, including Rajpurkar et al.\ (2017) on radiology, reinforced the finding that ensemble methods generalise far more reliably than standalone models when class distributions overlap.
 
-A different line of tree-based research led to gradient boosting. Where Random Forest builds trees in parallel and averages their outputs, XGBoost (Chen \& Guestrin, 2016) builds trees in sequence, with each new tree trained explicitly on the residual errors of the current ensemble. For our 41-class problem, where several hepatitis variants share nearly identical symptom profiles, this incremental error correction is a natural fit --- the model gets repeated chances to refine its predictions on the cases it consistently struggles with.
+Gradient boosting followed a different path to similarly strong results. Where Random Forest constructs trees independently and averages them, XGBoost (Chen \& Guestrin, 2016) builds trees in strict sequence, with every successive tree trained to minimise the residual loss of the current ensemble. For a 41-class problem in which several hepatitis variants look nearly identical from a symptom standpoint, this iterative error-correction mechanism is a natural match --- the model is given multiple passes to refine its output on the cases it consistently gets wrong.
 
-\textbf{Where existing work falls short} is mostly in scope. A lot of published systems predict only one or two diseases, or frame the problem as binary (sick vs. healthy). Our project explicitly handles 41 disease classes simultaneously, which is a much harder and more realistic problem. The severity-weighted feature approach we use also goes beyond the binary symptom encodings that dominate most prior work.
+\textbf{The gap in existing literature} is mostly one of ambition and scope. A substantial portion of published clinical ML systems tackle only one or two diseases, or simplify the problem to a binary healthy-versus-sick question. Our system handles 41 disease classes in a single unified model, which is both harder and more practically useful. The severity-weighted feature encoding we adopted also goes well beyond the simple binary presence/absence flags that dominate prior work, giving the classifier richer signal to work with.
 
 % ================================================================
 \section{Dataset Description}
 % ================================================================
 
 \subsection{Source}
-We used the dataset published on Kaggle by \textit{itachi9604} (full citation in References), accessed through the GitHub mirror by \textit{amMistic}. The data is spread across two files:
+For this project we used the publicly available dataset published on Kaggle by \textit{itachi9604} (full citation in References), accessed via the GitHub mirror maintained by \textit{amMistic}. The data is split across two files:
 
 \begin{itemize}
-    \item \texttt{disease\_raw.csv} --- 4,925 patient records, each listing up to 17 symptoms by name.
-    \item \texttt{symptom\_severity.csv} --- a lookup table mapping each of the 133 known symptoms to a severity weight between 1 and 7.
+    \item \texttt{disease\_raw.csv} --- 4,925 patient records, each one listing up to 17 symptoms by name.
+    \item \texttt{symptom\_severity.csv} --- a lookup table assigning each of the 133 known symptoms a severity weight on a scale of 1 to 7.
 \end{itemize}
 
 \subsection{Dataset Characteristics}
@@ -275,49 +275,49 @@ Train / Test Split  & 80\% / 20\% (stratified) \\
 \end{table}
 
 \subsection{Feature Representation}
-The raw CSV stores each patient's symptoms as up to 17 text strings spread across separate columns (\texttt{Symptom\_1} through \texttt{Symptom\_17}). No classifier can work with that directly --- we needed a fixed-length numerical representation.
+The raw CSV stores each patient's condition as up to 17 symptom names spread across individual columns (\texttt{Symptom\_1} through \texttt{Symptom\_17}). No classifier can consume text strings arranged that way --- we needed to convert everything into a fixed-length numerical vector first.
 
-Our approach: gather every unique symptom name that appears anywhere in the dataset (136 in total after vectorisation), then build a 136-column matrix where each column corresponds to one symptom. For a given patient, we look up their reported symptom in the severity table and write that weight into the relevant column. Unreported symptoms stay as 0.
+Our approach was straightforward: collect every unique symptom name appearing anywhere across all records (136 in total after vectorisation), then construct a 136-column matrix where each column represents one symptom. For each patient, we look up their reported symptoms in the severity table and fill the relevant columns with the corresponding weight. Symptoms not reported by that patient stay at 0.
 
-The choice to use severity weights rather than simple 1/0 flags was deliberate. Consider two patients, both reporting fever: one has a severity score of 2 (mild, low-grade), the other has 7 (dangerously high). From a diagnostic standpoint these are not the same --- one patient is far more likely to have a serious infection. Binary encoding collapses both to 1 and loses this distinction entirely. Severity encoding keeps it.
+The decision to use severity weights rather than plain binary flags was a deliberate one. Take two patients who both report fever: one has a severity score of 2 (mild, likely low-grade), the other scores 7 (dangerously high). Diagnostically these are quite different situations --- the second patient is far more likely to be dealing with a serious infection. A binary 0/1 encoding collapses both into the same value and throws that distinction away entirely. Severity encoding preserves it.
 
-Beyond symptom severity, we added a \textbf{patient age feature} grounded in clinical epidemiology. Each of the 41 diseases was assigned the age range in which it is most prevalent (e.g.\ Chicken pox: 2--12, Heart attack: 45--80, Acne: 13--25). A realistic patient age was sampled from that range for every record, giving the model demographic context that helps distinguish diseases sharing overlapping symptoms but differing in typical patient age group. This brings the total feature count to \textbf{137} (136 symptom severity scores + 1 age column), reduced to \textbf{135} after removing two zero-variance features.
+On top of this, we introduced a \textbf{patient age feature} anchored in clinical epidemiology. Each of the 41 diseases was assigned the age range in which it most commonly presents (e.g.\ Chicken pox: 2--12, Heart attack: 45--80, Acne: 13--25). A realistic patient age was then sampled from that range for every record, giving the model some demographic context to work with --- which is particularly helpful for distinguishing diseases that share many overlapping symptoms but affect different age groups. The total feature count after this addition is \textbf{137} (136 symptom severity scores plus the age column), reduced to \textbf{135} once two zero-variance features are removed.
 
 % ================================================================
 \section{Methodology}
 % ================================================================
 
 \subsection{Data Collection}
-Both dataset files were downloaded from their public GitHub URLs using \texttt{curl}. No API keys or login credentials were needed. The files were stored locally in a \texttt{dataset/} subfolder within the project directory.
+Both dataset files were pulled directly from their publicly accessible GitHub URLs using \texttt{curl}. No API tokens, login credentials, or institutional access were required. The files were stored locally inside a \texttt{dataset/} subfolder within the project directory, keeping paths consistent across all notebook cells.
 
 \subsection{Data Preprocessing}
 
-Getting from raw CSV files to a clean, model-ready matrix took several deliberate steps:
+Going from raw CSV files to a clean, model-ready matrix involved several careful steps:
 
 \begin{enumerate}
-    \item \textbf{Severity-Weighted Feature Construction:} We iterated through every symptom column for every patient, looked up the severity weight for each named symptom, and filled the corresponding position in a 136-column feature matrix. Anything not reported stayed 0.
+    \item \textbf{Severity-Weighted Feature Construction:} We walked through every symptom column for every patient record, looked up the clinical severity weight for each reported symptom, and filled the corresponding position in a 136-column feature matrix. Symptoms that a patient did not report were left as 0.
 
-    \item \textbf{Incomplete Symptom Simulation:} Real patients do not always report every symptom they have. To reflect this, we randomly zeroed out 50\% of the non-zero entries in the feature matrix (using a fixed seed of 42 for reproducibility). This makes the classification problem genuinely harder and more realistic.
+    \item \textbf{Incomplete Symptom Simulation:} In practice, patients rarely disclose every symptom they are experiencing --- some are forgotten, some are considered trivial, and some are embarrassing to mention. To reflect this, we randomly zeroed out 50\% of the non-zero entries in the feature matrix (fixed seed of 42 for full reproducibility). This step makes the classification task harder and considerably more realistic.
 
-    \item \textbf{Age Feature Generation:} A patient age column was added by sampling from a disease-specific epidemiological age range for each record (e.g.\ Chicken pox: 2--12, Heart attack: 45--80). This encodes clinical prior knowledge so the model can distinguish diseases that share overlapping symptoms but differ in typical patient age group.
+    \item \textbf{Age Feature Generation:} A patient age column was added by sampling from the disease-specific epidemiological age range for each record (e.g.\ Chicken pox: 2--12, Heart attack: 45--80). This encodes clinical prior knowledge directly into the input, helping the model separate diseases that look identical in terms of symptoms but typically affect very different age groups.
 
-    \item \textbf{Label Encoding:} The target column (\texttt{prognosis}) contains disease names as strings. We used \texttt{LabelEncoder} to convert these to integer indices --- a requirement for all four classifiers.
+    \item \textbf{Label Encoding:} The target column (\texttt{prognosis}) stores disease names as free text. We applied \texttt{LabelEncoder} to convert these into integer class indices --- a prerequisite for all four classifiers in our pipeline.
 
-    \item \textbf{Train-Test Split:} We split the data 80/20 with stratification, so each disease class appears proportionally in both sets. This gave us 3,940 training samples and 985 test samples.
+    \item \textbf{Train-Test Split:} The data was split 80/20 with stratification, ensuring every disease class appears in the correct proportion in both subsets. This produced 3,940 training samples and 985 test samples.
 
-    \item \textbf{Variance Thresholding:} Two features had zero variance across the training set after the dropout step. We removed them with \texttt{VarianceThreshold}, bringing the final feature count to \textbf{135} (134 symptom features + 1 age feature).
+    \item \textbf{Variance Thresholding:} After the dropout simulation, two symptom features turned out to have zero variance across the entire training set --- meaning they carried no information. We removed them using \texttt{VarianceThreshold}, reducing the final feature count to \textbf{135} (134 symptom features plus the age feature).
 \end{enumerate}
 
 \subsection{Exploratory Data Analysis}
 
-Before jumping to modelling, we spent time actually looking at the data.
+Before jumping straight into modelling, we spent some time actually exploring what the data looked like.
 
 \begin{itemize}
-    \item \textbf{Class Distribution:} Each of the 41 disease classes has roughly 120 records, which is fairly balanced. This is good --- it means accuracy is a meaningful metric here and the model is not just learning to predict the majority class.
+    \item \textbf{Class Distribution:} Each of the 41 disease classes contains roughly 120 records, making the dataset fairly well-balanced overall. This is a useful property --- it means accuracy is a meaningful metric here, and the models are not simply learning to favour the most common class.
 
-    \item \textbf{Symptom Frequency:} Symptoms like \textit{fatigue}, \textit{vomiting}, and \textit{high fever} appeared most frequently across the dataset, largely because they are associated with many different diseases. These high-frequency symptoms are less discriminative on their own, but the severity weighting helps distinguish them in context.
+    \item \textbf{Symptom Frequency:} Symptoms such as \textit{fatigue}, \textit{vomiting}, and \textit{high fever} showed up most frequently across the dataset, which makes sense since they are associated with a wide range of diseases. On their own, these high-frequency symptoms are not particularly discriminative, but the severity weighting helps the model make finer distinctions when they appear together with other, more specific signals.
 
-    \item \textbf{Correlation Heatmap:} Looking at the top 20 symptoms, we found noticeable correlations within disease-specific clusters. For example, symptoms like \textit{yellowing of eyes}, \textit{dark urine}, and \textit{loss of appetite} all tend to co-occur in hepatitis-related diseases. This is exactly the kind of structure a tree-based model can exploit.
+    \item \textbf{Correlation Heatmap:} Examining the top 20 most common symptoms revealed noticeable co-occurrence patterns within disease-specific groups. For instance, \textit{yellowing of eyes}, \textit{dark urine}, and \textit{loss of appetite} tend to appear together in hepatitis-related conditions. These clustered correlations are precisely the kind of structure that tree-based models are good at picking up and exploiting.
 \end{itemize}
 
 \begin{figure}[H]
@@ -335,32 +335,32 @@ Before jumping to modelling, we spent time actually looking at the data.
 \subsection{Model Development}
 
 \subsubsection{Decision Tree Classifier}
-Quinlan (1986) first formalised the idea behind decision trees: at each node, pick the feature whose split best separates the remaining classes, repeat recursively, and stop when a leaf is pure (or nearly so). In our case, the Gini impurity criterion picks the symptom that best divides the disease classes at each step --- for example, ``is the severity of yellowing of eyes above 3?'' routes the sample toward hepatitis-related conditions.
+Quinlan (1986) formalised the core idea behind decision trees: at every internal node, select the feature whose split best separates the remaining disease classes, continue recursively down each branch, and halt when a leaf is pure or close enough to it. In our setup, the Gini impurity criterion selects the symptom that most cleanly divides the classes at each step --- a question like ``is the severity of yellowing of eyes above 3?'' would, for instance, route a patient firmly toward hepatitis-related conditions.
 
-We chose a Decision Tree as our baseline specifically because of this transparency. When a patient asks ``why does the system think I have malaria?'', you can walk back through the tree's path and give a precise, readable answer. We did not restrict the tree depth, so it could learn the full complexity of the training data --- which also means it overfits more, as we expected given the 50\% symptom dropout noise.
+We selected the Decision Tree as our baseline specifically for its transparency. If a patient wants to know why the system is pointing toward malaria, you can trace the exact path through the tree and give a clear, step-by-step answer in plain language --- something no ensemble model can offer. We deliberately did not cap the tree depth, allowing it to absorb the full complexity of the training data. This naturally leads to more overfitting, which we fully expected given the added noise from the 50\% symptom dropout step.
 
-\textbf{Configuration:} \texttt{criterion='gini'}, \texttt{random\_state=42}, no depth limit (intentional, to establish an upper-complexity baseline).
+\textbf{Configuration:} \texttt{criterion='gini'}, \texttt{random\_state=42}, no depth constraint (intentional --- serves as an upper-complexity baseline).
 
 \subsubsection{Random Forest Classifier}
-Building on Breiman (2001), our Random Forest trains 200 decision trees, each on a different bootstrap sample of the training data and each restricted to a random subset of features at every split. The prediction is a majority vote across all 200 trees.
+Following Breiman (2001), our Random Forest grows 200 individual decision trees, each on a different bootstrap sample of the training data and each constrained to a random subset of features at every split point. The final prediction is determined by a majority vote across all 200 trees.
 
-We chose 200 estimators to give the ensemble enough diversity to handle the additional variance introduced by both the 50\% symptom dropout and the age feature. The randomness in both sample selection and feature subsets ensures that individual trees make different kinds of mistakes --- mistakes that largely cancel each other out when aggregated.
+We settled on 200 estimators to give the ensemble sufficient diversity to absorb the extra variance introduced by both the 50\% symptom dropout and the newly added age feature. Because each tree sees a slightly different random view of the data, individual trees make different kinds of errors --- and those errors tend to cancel each other out when aggregated across the full forest.
 
 \textbf{Configuration:} \texttt{n\_estimators=200}, \texttt{random\_state=42},\\
-\hspace*{2.6cm}\texttt{n\_jobs=-1} (parallel training).
+\hspace*{2.6cm}\texttt{n\_jobs=-1} (all available CPU cores used for training).
 
 \subsubsection{XGBoost Classifier}
-We included XGBoost (Chen \& Guestrin, 2016) because it handles the class overlap problem differently from Random Forest. Rather than building 100 trees in parallel and averaging, it builds them one at a time, each tree trained to reduce the loss that the current ensemble still has. A learning rate of 0.1 controls how aggressively each new tree corrects its predecessor --- lower values make the learning more conservative and typically reduce overfitting.
+We included XGBoost (Chen \& Guestrin, 2016) because it tackles the class-overlap problem quite differently from a Random Forest. Rather than growing 100 trees in parallel and averaging their outputs, it builds them one after another --- each tree is specifically trained to reduce whatever residual loss the existing ensemble still carries. The learning rate of 0.1 governs how aggressively each new tree corrects its predecessor; keeping it moderate reduces the risk of overfitting to noisy training samples.
 
-The \texttt{max\_depth=6} limit was chosen to prevent individual trees from becoming too specialised on noisy training samples, and \texttt{mlogloss} was used as the evaluation metric because it is designed for multi-class problems and penalises confident wrong predictions more than uncertain ones.
+Setting \texttt{max\_depth=6} prevents individual trees from becoming overly specialised on the dropout-induced noise in our feature matrix. We chose \texttt{mlogloss} as the evaluation metric because it is tailored for multi-class problems and penalises over-confident wrong predictions more heavily than cautious ones --- a sensible priority in a medical setting.
 
 \textbf{Configuration:} \texttt{n\_estimators=100}, \texttt{learning\_rate=0.1},\\
 \hspace*{2.6cm}\texttt{max\_depth=6}, \texttt{eval\_metric='mlogloss'}.
 
 \subsubsection{Stacking Ensemble Classifier}
-The Stacking Ensemble combines all three base learners via a Logistic Regression meta-learner trained using 5-fold stratified cross-validation to prevent data leakage. During training, each base model generates out-of-fold probability predictions on the training set; these predictions, together with the original feature set (\texttt{passthrough=True}), form the meta-features that train the Logistic Regression. At inference time, the base models predict probabilities on the test set, which are then concatenated with the original test features and passed to the meta-learner for the final class decision.
+The Stacking Ensemble ties together all three base learners using a Logistic Regression meta-learner, trained via 5-fold stratified cross-validation to guard against data leakage. During training, each base model produces out-of-fold probability predictions over the training set; these predictions, concatenated with the original feature set (\texttt{passthrough=True}), form the meta-features that the Logistic Regression learns from. At inference time, the base models generate probability outputs on the test set, which are joined with the original test features and handed to the meta-learner for the final prediction.
 
-The \texttt{passthrough=True} setting is a key design choice: it allows the meta-learner to correct cases where all base models are confidently wrong by directly inspecting the raw clinical signals (symptom severities and age), rather than relying solely on the base model outputs.
+The \texttt{passthrough=True} configuration is a deliberate and important design choice. It means the meta-learner is not restricted to working only with what the base models tell it --- it can also look directly at the raw symptom severities and patient age. In situations where all three base models are simultaneously wrong with high confidence, this direct access to the original clinical signals gives the meta-learner a way to recover and arrive at the correct answer.
 
 \textbf{Configuration:}
 \begin{itemize}
@@ -372,13 +372,13 @@ The \texttt{passthrough=True} setting is a key design choice: it allows the meta
 
 \subsection{Model Evaluation}
 
-We evaluated each model on the held-out test set (985 samples) using the following metrics:
+Each model was evaluated against the same held-out test set of 985 samples, using the following metrics:
 \begin{itemize}
-    \item \textbf{Accuracy} --- the simple fraction of correctly predicted samples.
-    \item \textbf{Precision} --- of all the times a model predicted Disease X, how often was it actually Disease X?
-    \item \textbf{Recall} --- of all the actual cases of Disease X in the test set, how many did the model catch?
-    \item \textbf{F1-Score} --- balances precision and recall into a single number; useful because both matter in medical settings.
-    \item \textbf{Confusion Matrix} --- a full breakdown showing exactly which diseases are being confused with which. This is more informative than accuracy alone.
+    \item \textbf{Accuracy} --- the proportion of all test samples that were correctly classified.
+    \item \textbf{Precision} --- out of every time the model predicted a given disease, how often was that prediction actually correct?
+    \item \textbf{Recall} --- out of all the real cases of a given disease in the test set, what fraction did the model successfully identify?
+    \item \textbf{F1-Score} --- the harmonic mean of precision and recall, giving a single balanced figure; important in medical applications where both false positives and false negatives carry consequences.
+    \item \textbf{Confusion Matrix} --- a class-by-class breakdown showing exactly which diseases are being mixed up with which others. This gives a far more complete picture than accuracy alone.
 \end{itemize}
 
 % ================================================================
@@ -386,7 +386,7 @@ We evaluated each model on the held-out test set (985 samples) using the followi
 \section{System Architecture}
 % ================================================================
 
-The full pipeline from raw files to final prediction is shown in Figure~\ref{fig:pipeline}, drawn using standard flowchart symbols:
+Figure~\ref{fig:pipeline} shows the complete pipeline from loading the raw files all the way through to generating the final prediction, drawn using standard flowchart notation:
 \textbf{Oval} = Terminal (Start/End),
 \textbf{Parallelogram} = Input/Output,
 \textbf{Rectangle} = Process/Action,
@@ -486,16 +486,16 @@ The full pipeline from raw files to final prediction is shown in Figure~\ref{fig
 \end{figure}
 
 \noindent
-Breaking the pipeline into logical layers:
+Breaking the pipeline down into its logical layers makes the overall structure clearer:
 
 \begin{itemize}
-    \item \textbf{Input (Parallelogram):} Two CSV files --- \texttt{disease\_raw.csv} (patient records) and \texttt{symptom\_severity.csv} (severity weights).
-    \item \textbf{Feature Construction (Rectangle):} Builds the severity-weighted matrix, applies 50\% dropout, and appends the epidemiological age column.
-    \item \textbf{Decision (Diamond):} Checks for missing values; the ``Yes'' branch drops null rows before continuing. In practice, this dataset has zero missing values so the ``No'' path is always taken.
-    \item \textbf{Preprocessing (Rectangle):} Label encodes the target, performs the stratified split, and removes zero-variance features.
-    \item \textbf{Model Layer (Rectangle):} Four classifiers trained in sequence; the Stacking Ensemble uses 5-fold CV internally to prevent data leakage.
-    \item \textbf{Evaluation (Rectangle):} Accuracy, per-class precision/recall/F1, and normalised confusion matrices.
-    \item \textbf{Output (Parallelogram):} Predicted disease label and the full performance report.
+    \item \textbf{Input (Parallelogram):} The two raw CSV files --- \texttt{disease\_raw.csv} holding patient records and \texttt{symptom\_severity.csv} providing the severity weight lookup.
+    \item \textbf{Feature Construction (Rectangle):} Assembles the severity-weighted feature matrix, applies the 50\% dropout simulation for incomplete reporting, and appends the epidemiological age column.
+    \item \textbf{Decision (Diamond):} Checks whether any missing values remain; the ``Yes'' branch drops those rows before proceeding. In practice, the dataset contains no missing values after preprocessing, so the ``No'' path is always followed.
+    \item \textbf{Preprocessing (Rectangle):} Encodes the target column as integer class indices, performs the stratified 80/20 train-test split, and removes zero-variance features from both subsets.
+    \item \textbf{Model Layer (Rectangle):} All four classifiers are trained in sequence on the processed training data; the Stacking Ensemble uses internal 5-fold stratified cross-validation to avoid data leakage.
+    \item \textbf{Evaluation (Rectangle):} Computes overall accuracy, per-class precision, recall and F1-score, and generates normalised confusion matrices for each model.
+    \item \textbf{Output (Parallelogram):} The predicted disease label for each test sample along with the full performance report.
 \end{itemize}
 
 % ================================================================
@@ -525,16 +525,16 @@ Jupyter Notebook        & Interactive development environment \\
 \subsection{Implementation Steps}
 
 \begin{enumerate}
-    \item Load \texttt{disease\_raw.csv} and \texttt{symptom\_severity.csv} from the \texttt{dataset/} subfolder.
-    \item Build a 136-dimensional severity-weighted feature matrix for each patient.
-    \item Randomly zero out 50\% of reported symptoms to simulate incomplete clinical data.
-    \item Append a patient age column sampled from the epidemiological age range of each disease.
-    \item Encode the \texttt{prognosis} column to integer class indices.
-    \item Apply a stratified 80/20 train-test split.
-    \item Drop zero-variance features from the training set (and apply the same mask to the test set), yielding 135 features.
-    \item Train all four classifiers on the processed training data.
-    \item Generate predictions on the test set and compute evaluation metrics.
-    \item Plot confusion matrices and feature importances for analysis.
+    \item Read \texttt{disease\_raw.csv} and \texttt{symptom\_severity.csv} from the local \texttt{dataset/} subfolder into Pandas DataFrames.
+    \item Construct a 136-dimensional severity-weighted feature matrix, mapping each patient's reported symptoms to their respective clinical weights.
+    \item Randomly zero out 50\% of reported symptom values to replicate the incomplete symptom disclosure common in real clinical encounters.
+    \item Append a patient age column by sampling from the epidemiologically grounded age range specific to each disease.
+    \item Encode the \texttt{prognosis} text labels to integer class indices using \texttt{LabelEncoder}.
+    \item Perform a stratified 80/20 train-test split, preserving class proportions in both subsets.
+    \item Identify and remove zero-variance features using \texttt{VarianceThreshold} (fitted on training data only, then applied identically to the test set), leaving 135 usable features.
+    \item Train all four classifiers on the processed training subset.
+    \item Generate predictions on the held-out test set and compute accuracy, precision, recall, and F1-score for each model.
+    \item Visualise normalised confusion matrices and Random Forest feature importances for interpretation.
 \end{enumerate}
 
 \subsection{Key Code Snippet}
@@ -624,7 +624,7 @@ Random Forest (200)   & 93.30\% & 0.94 & 0.93 \\
 
 \subsection{Confusion Matrices}
 
-The confusion matrices below are normalised row-wise, so each cell shows the fraction of actual instances of a class that were predicted as each possible class. A perfect classifier would show 1.00 along the diagonal and 0.00 everywhere else.
+The confusion matrices that follow are normalised row-wise, meaning each cell shows the fraction of actual instances of a given class that were assigned to each possible predicted class. A perfect classifier would display 1.00 across the entire main diagonal and 0.00 in every off-diagonal position.
 
 \begin{figure}[H]
     \centering
@@ -658,7 +658,7 @@ The confusion matrices below are normalised row-wise, so each cell shows the fra
     \caption{Top 20 Feature Importances -- Random Forest}
 \end{figure}
 
-The Random Forest base model (inside the Stacking Ensemble) identified symptoms like \textit{yellowing of eyes}, \textit{dark urine}, \textit{sweating}, and \textit{chills} as the most discriminative across the 41 classes. Notably, the \textit{age} feature also appears among the top importances, confirming that epidemiological prior knowledge contributed meaningful predictive signal. These symptoms are strongly associated with specific diseases (e.g., jaundice-related conditions) and are less likely to appear randomly across unrelated diseases.
+The Random Forest component (serving as a base learner within the Stacking Ensemble) flagged symptoms like \textit{yellowing of eyes}, \textit{dark urine}, \textit{sweating}, and \textit{chills} as the most discriminative signals across all 41 classes. What is particularly encouraging is that the \textit{age} feature also appears prominently among the top importances --- this confirms that the epidemiological prior knowledge we encoded contributed real predictive value, not just noise. These symptoms tend to cluster tightly within specific disease groups (jaundice-related conditions, for instance) and are unlikely to appear in the same combination across unrelated diseases, which is why the model latches onto them.
 
 % ================================================================
 \section{Discussion}
@@ -666,54 +666,54 @@ The Random Forest base model (inside the Stacking Ensemble) identified symptoms 
 
 \subsection{What the Numbers Actually Mean}
 
-The accuracy gap between models spans nearly 8 percentage points --- from Decision Tree at 85.58\% to Stacking Ensemble at 93.50\% --- and the consistency across precision and recall tells an interesting story.
+The spread in accuracy across models is nearly 8 percentage points --- from the Decision Tree at 85.58\% up to the Stacking Ensemble at 93.50\%. The way precision and recall track alongside accuracy across all four models tells a consistent and reassuring story: none of the models are gaming the metric by being selectively good at common classes.
 
-\textbf{Stacking Ensemble at 93.50\%} was the strongest performer (macro precision 0.94, macro recall 0.93). The \texttt{passthrough=True} setting proved important: it allowed the Logistic Regression meta-learner to fall back on raw symptom and age signals when all three base models were uncertain, correcting residual errors that no single model could handle alone.
+\textbf{Stacking Ensemble at 93.50\%} came out on top (macro precision 0.94, macro recall 0.93). The \texttt{passthrough=True} configuration turned out to be genuinely important: on cases where all three base models were simultaneously uncertain or wrong, the Logistic Regression meta-learner could fall back on the raw symptom severity and age values directly, catching residual errors that no individual model had any mechanism to handle.
 
-\textbf{Random Forest (200 trees) at 93.30\%} was essentially neck-and-neck with the Stacking Ensemble, just 0.20 percentage points behind. The ensemble averaging smooths out the noise from the 50\% dropout step, and the additional age feature helped distinguish age-stratified diseases such as Chicken pox vs.\ Psoriasis. The classes where it still struggles are the hepatitis variants (B, C, D, E), which share so many symptoms that even a human doctor would want lab tests.
+\textbf{Random Forest (200 trees) at 93.30\%} was virtually on par with the Stacking Ensemble --- just 0.20 percentage points behind, which is barely meaningful at this test set size. The averaging across 200 trees does a solid job of absorbing the variance introduced by the 50\% dropout step, and the age feature helped clearly separate diseases that are age-stratified, like Chicken pox versus Psoriasis. The hepatitis variants (B, C, D, E) still cause the most confusion, but that is almost expected --- even a trained physician would order blood tests to separate them.
 
-\textbf{XGBoost at 91.47\%} performed well but did not close the gap to Random Forest. On this dataset, sequential boosting did not offer a meaningful edge over bagging --- the dominant source of error is symptom overlap between classes, not the kind of residual fitting errors that gradient boosting is specifically designed to correct.
+\textbf{XGBoost at 91.47\%} performed respectably but could not match Random Forest on this particular dataset. The reason, we think, is that sequential boosting is most beneficial when the dominant source of error is correctable residual loss from earlier trees. Here, the main source of error is symptom overlap between disease classes --- a structural problem that gradient boosting cannot resolve through additional iterations.
 
-\textbf{Decision Tree at 85.58\%} still delivered a reasonable baseline. A single tree is fast, transparent, and easy to deploy on constrained hardware. If interpretability is the primary concern, 85.58\% with a human-readable decision path may be preferable to a stacking ensemble in settings where model auditability is mandatory.
+\textbf{Decision Tree at 85.58\%} remains a useful and honest baseline. A single tree is lightweight, fast to train, and produces genuinely interpretable decision paths. In any scenario where clinical auditability is a hard requirement --- which it often is --- an 85.58\% accuracy with a fully readable model may well be the right trade-off over a more opaque ensemble.
 
 \subsection{What Works Well and What Does Not}
 
-On the positive side, the severity-weighted features gave us a noticeable advantage over simple binary encoding, the age feature added clinically grounded demographic context, and the dropout simulation made the models more robust to missing inputs at test time. The balanced class distribution also meant we did not have to worry about the model being biassed towards common diseases.
+On the positive side, quite a few things worked well. The severity-weighted feature representation gave a clear advantage over the simple binary encoding that most comparable systems use. The epidemiological age feature added demographic context that is otherwise hard to capture from symptoms alone. The dropout simulation made the trained models more resilient to the kind of incomplete inputs they will inevitably encounter in a real clinical setting. And the reasonably balanced class distribution meant we could interpret accuracy directly without worrying about majority-class bias.
 
-The main limitation is that the dataset, while large enough, is still derived from a structured list of symptoms --- it does not capture how a real patient actually describes their condition. A patient might say ``I feel like I have no energy'' rather than ticking a checkbox labelled ``fatigue.'' Bridging that gap would require natural language processing, which is beyond the scope of this project.
+The main limitation is one that no amount of clever feature engineering can fully solve at this stage: the dataset is built from a structured symptom checklist, not from actual patient conversations. A real patient might describe their condition as ``I have been feeling absolutely terrible, no energy at all'' rather than ticking a box labelled ``fatigue.'' Capturing and interpreting that kind of free-form description requires natural language processing, which falls outside the scope of this project but represents a meaningful direction for future work.
 
 % ================================================================
 \section{Applications}
 % ================================================================
 
 \begin{itemize}
-    \item \textbf{General Practice Clinics:} A GP seeing 30 patients a day could run each patient's reported symptoms through the model as a quick second opinion --- not to replace the diagnosis, but to flag cases where the symptom pattern matches something the doctor might not have considered first.
-    \item \textbf{Low-Connectivity Remote Areas:} A lightweight version of the model (the Decision Tree alone is tiny) could run offline on a basic Android phone, giving community health workers in villages a tool to decide whether a patient needs to travel to a specialist or can be treated locally.
-    \item \textbf{Triage in Outpatient Queues:} Before a patient sees a doctor, a nurse could enter their symptoms and get a ranked shortlist of likely conditions. The doctor then starts the consultation already oriented toward the probable diagnoses, which saves time and reduces the chance of a missed diagnosis under time pressure.
-    \item \textbf{Personal Symptom Checking:} A web or mobile form backed by the model could help people answer the question ``should I go to a hospital or wait and see?'' --- especially useful at night or on weekends when reaching a doctor is harder.
-    \item \textbf{Teaching Aid in Medical Colleges:} The feature importance chart is genuinely useful in a classroom: it shows students which symptoms are most discriminative across diseases, which reinforces the clinical reasoning behind symptom clusters far better than a static textbook table.
+    \item \textbf{General Practice Clinics:} A GP seeing 25--30 patients per day could run each patient's symptom profile through the model as a quick sanity check --- not to replace clinical judgement, but to surface conditions the doctor might not have immediately considered given the time pressure of a busy OPD.
+    \item \textbf{Low-Connectivity Remote Areas:} The Decision Tree component alone is small enough to run entirely offline on a modest Android device. Community health workers in rural areas could use it to make a first assessment and decide whether a patient needs to be referred to a district hospital or can be managed at the local level.
+    \item \textbf{Triage Support in Outpatient Queues:} A nurse or health worker could log a patient's symptoms before they see the doctor. The system would then return a ranked shortlist of probable diagnoses, so the doctor walks into the consultation already oriented toward the most likely conditions, saving time and reducing the risk of a missed diagnosis under pressure.
+    \item \textbf{Personal Symptom Assessment:} A simple web or mobile interface backed by the model could help individuals decide whether their symptoms warrant a hospital visit or whether waiting a day is reasonable --- particularly useful late at night, in remote locations, or during public holidays when reaching a doctor is genuinely difficult.
+    \item \textbf{Teaching Tool in Medical and Nursing Colleges:} The feature importance chart has real pedagogical value in a classroom setting. It visually demonstrates which symptoms are most discriminative across disease classes, reinforcing the clinical reasoning behind symptom clusters far more memorably than a static table in a textbook ever could.
 \end{itemize}
 
 % ================================================================
 \section{Future Scope}
 % ================================================================
 
-There are several ways this project could be meaningfully extended:
+There are several concrete directions in which this work could be taken further:
 
 \begin{itemize}
-    \item \textbf{Hyperparameter Tuning:} The current stacking configuration uses well-chosen but untuned parameters. A systematic search using \texttt{Optuna} or \texttt{GridSearchCV} --- particularly the meta-learner regularisation constant $C$ and XGBoost depth --- could push accuracy further.
-    \item \textbf{Neural Networks:} A Multi-Layer Perceptron or a small Transformer encoder could capture higher-order symptom interactions that tree-based models miss, especially for the hepatitis variants that still cause most confusions.
-    \item \textbf{Explainability with SHAP:} Global feature importance from Random Forest is a start, but SHAP values would let us explain individual predictions --- ``the model predicted Malaria primarily because of high fever combined with chills and the patient's age of 28'' --- which is far more actionable in a clinical context.
-    \item \textbf{Web Deployment:} Wrapping the Stacking Ensemble in a FastAPI backend and building a symptom-input form would make this a usable tool, not just a research prototype. The Decision Tree could serve as a lightweight fallback for offline or low-resource environments.
-    \item \textbf{Richer Patient Data:} Adding gender, vital signs (blood pressure, temperature), and basic lab values (CBC, LFT) would substantially improve real-world prediction quality and reduce the reliance on age as a proxy for clinical context.
-    \item \textbf{Real Patient Records:} The current dataset uses a structured symptom checklist. Bridging to free-text clinical notes via NLP (e.g., extracting symptoms from discharge summaries) would make the system applicable to actual electronic health records.
+    \item \textbf{Hyperparameter Optimisation:} The current configuration uses carefully selected but manually chosen parameters. A systematic search with tools like \texttt{Optuna} or \texttt{GridSearchCV} --- particularly targeting the meta-learner regularisation constant $C$ and the XGBoost tree depth --- could squeeze out additional accuracy.
+    \item \textbf{Neural Network Approaches:} A Multi-Layer Perceptron or a compact Transformer encoder might capture higher-order symptom interactions that tree-based models structurally cannot, especially for the hepatitis variants which account for the majority of remaining misclassifications.
+    \item \textbf{SHAP-Based Explainability:} Global feature importances from the Random Forest are a reasonable starting point, but SHAP values would allow us to explain individual predictions in plain language --- for instance, ``the system predicted Malaria primarily because the patient reported high fever and chills together, and their age of 28 falls within the most common demographic for that disease.'' That level of specificity is far more actionable for a clinician.
+    \item \textbf{Deployment as a Web or Mobile Tool:} Wrapping the Stacking Ensemble in a FastAPI backend and pairing it with a simple symptom-input front-end would transform this from a notebook experiment into a genuinely usable application. The Decision Tree variant could serve as an offline fallback for low-resource or low-connectivity environments.
+    \item \textbf{Richer Clinical Features:} Incorporating gender, basic vital signs such as temperature and blood pressure, and routine lab values like a complete blood count or liver function test would substantially improve prediction quality in practice, reducing the dependence on age as a proxy for clinical context.
+    \item \textbf{Free-Text Clinical Notes:} The current dataset is based on a structured symptom checklist, which is tidy but not representative of real consultations. Applying NLP to extract symptoms from free-text discharge summaries or physician notes would make the system applicable to actual electronic health record systems.
 \end{itemize}
 
 % ================================================================
 \section{Conclusion}
 % ================================================================
 
-We set out to build a system that could predict diseases from age and symptoms, and the results are genuinely encouraging. All four models performed well above chance on a challenging 41-class problem:
+We went into this project with the goal of building a working disease prediction system from symptom severity data and patient age, and the outcomes have been genuinely encouraging. All four classifiers performed well above chance on a difficult 41-class prediction task:
 
 \begin{itemize}
     \item Decision Tree: \textbf{85.58\%}
@@ -722,11 +722,11 @@ We set out to build a system that could predict diseases from age and symptoms, 
     \item Stacking Ensemble: \textbf{93.50\%} $\leftarrow$ best overall
 \end{itemize}
 
-Two innovations drove the performance gains beyond the baseline: (1) the \textbf{age-aware feature}, which encoded epidemiological prior knowledge directly into the input vector and helped distinguish diseases with overlapping symptoms but different typical patient age groups; and (2) the \textbf{Stacking Ensemble with \texttt{passthrough=True}}, which combined base model probability outputs with the original features at the meta-learner level, squeezing out residual errors that individual models could not correct alone.
+Two design decisions drove the performance well beyond what a naive baseline would achieve. First, the \textbf{age-aware feature} embedded real epidemiological knowledge into the input vector, helping the model separate diseases that look nearly identical from a symptom perspective but typically affect patients in different life stages. Second, the \textbf{Stacking Ensemble with \texttt{passthrough=True}} allowed the Logistic Regression meta-learner to work not just from what the base models said, but also directly from the raw feature values --- catching residual errors that no single model had any mechanism to correct on its own.
 
-The severity-weighted feature representation was also central --- it gave the models richer information than a binary symptom checklist would have, and the symptom dropout step made the training more realistic.
+The severity-weighted feature encoding was equally central to the results. It gave every model a much richer signal to learn from than a simple present/absent checklist would have provided, and the 50\% symptom dropout step during training made the models appropriately cautious about incomplete inputs at test time.
 
-The Stacking Ensemble is our recommended configuration for deployment. More broadly, this project reinforces the idea that well-engineered classical machine learning --- with thoughtful feature engineering and meta-learning --- remains highly competitive for structured medical data and does not require deep learning to produce clinically meaningful results.
+Our recommendation for any deployment scenario is the Stacking Ensemble. More broadly, what this project demonstrates is that thoughtful feature engineering and well-structured meta-learning can push classical machine learning to genuinely competitive performance on complex structured medical data --- without needing to reach for deep learning or large pre-trained models to get there.
 
 % ================================================================
 \section{Roles and Contributions}
@@ -752,7 +752,7 @@ D & NAME 4 & Documentation, LaTeX report writing, presentation preparation \\
 \end{table}
 
 \vspace{0.4cm}
-Beyond the above division of work, all four members sat together for every key discussion, helped each other debug, and reviewed the final output as a group.
+Beyond the formal division above, all four of us sat together for every major decision point, helped one another debug when things were not working as expected, and reviewed the final notebook and report together as a group before submission.
 
 % ================================================================
 \section{References}
@@ -776,9 +776,9 @@ Beyond the above division of work, all four members sat together for every key d
 \section{Appendix --- Complete Source Code}
 % ================================================================
 
-This appendix contains the full, unabridged source code of the
-\texttt{Disease\_Prediction\_System.ipynb} notebook, reproduced
-cell by cell in execution order.
+This appendix reproduces the complete, unedited source code from the
+\texttt{Disease\_Prediction\_System.ipynb} notebook, presented
+cell by cell in the order they were executed.
 
 \subsection{Sample Dataset Records}
 
